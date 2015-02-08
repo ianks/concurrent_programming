@@ -20,7 +20,7 @@ public class PetersonTree {
 	}
 
 	public List<PetersonNode> growLockTree(List<PetersonNode> nodes) {
-		if (nodes.size() == numOfThreads/2)
+		if (nodes.size() == numOfThreads)
 			return nodes;
 
 		List<PetersonNode> currentLeaves = new ArrayList<>();
