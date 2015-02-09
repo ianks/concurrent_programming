@@ -5,7 +5,7 @@ public class TestPetersonTree implements Runnable {
 	public static final int countToThis = 1000;
 	public static final int noOfExperiments = 1000;
 	public static volatile int count = 0;
-	public static int threadCount = 64;
+	public static int threadCount = 8;
 	public static PetersonTree lock = new PetersonTree(threadCount);
 
 	public TestPetersonTree(int newMe) {
@@ -30,8 +30,11 @@ public class TestPetersonTree implements Runnable {
 		for (int i = 0; i < threadCount; i++) {
 			threads[i] = new Thread(new TestPetersonTree(i));
 			threads[i].start();
+		}
+
+		for (Thread t : threads) {
 			try {
-				threads[i].join();
+				t.join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
