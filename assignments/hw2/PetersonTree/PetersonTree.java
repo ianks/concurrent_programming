@@ -1,11 +1,16 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PetersonTree {
 	int numOfThreads;
+	private AtomicInteger lockCounter = new AtomicInteger(0);
+	private AtomicInteger unlockCounter = new AtomicInteger(0);
 	public static volatile int size;
 	public static PetersonNode root;
 	public static List<PetersonNode> leaves;
+	private final static Logger log = Logger.getLogger(PetersonTree.class.getName());
 
 	public PetersonTree(int threads) {
 		validateArgs(threads);
@@ -25,18 +30,18 @@ public class PetersonTree {
 	public void lock(int me) {
 		PetersonNode currentNode = leafLockForThread(me);
 
-		while (currentNode.parent != null) {
+		while (currentNode != null) {
 			currentNode.lock(me);
-			currentNode = currentNode.parent;
+			currentNode = currentNode.getParent();
 		}
 	}
 
-	public void unlock(int me) {
+	public synchronized void unlock(int me) {
 		PetersonNode currentNode = leafLockForThread(me);
 
-		while (currentNode.parent != null) {
+		while (currentNode != null) {
 			currentNode.unlock(me);
-			currentNode = currentNode.parent;
+			currentNode = currentNode.getParent();
 		}
 	}
 

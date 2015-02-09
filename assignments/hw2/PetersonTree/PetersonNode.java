@@ -14,6 +14,10 @@ class PetersonNode {
 		parent = node;
 	}
 
+	public synchronized PetersonNode getParent() {
+		return parent;
+	}
+
 	public void lock(int me) {
 		int j = 1 - me;
 
@@ -28,7 +32,11 @@ class PetersonNode {
 		}
 	}
 
-	public void unlock(int me) {
-		if (me == 0) flag0 = 0; else flag1 = 0;
+	public synchronized void unlock(int me) {
+		if (me == 0) {
+			flag0 = 0;
+		} else {
+			flag1 = 0;
+		}
 	}
 }
