@@ -21,7 +21,7 @@ class PetersonNode {
 		victim.set(me);
 
 		// Spin until my flag is unset and I am not victim
-		while(multipleFlagsSet() && isTheVictim(me)) {};
+		while(isAnotherFlagSet(me) && isTheVictim(me)) {};
 	}
 
 	public void unlock(int me) {
@@ -34,13 +34,11 @@ class PetersonNode {
 
 	// Check to see if more than 1 flags are set. If they are, that means
 	// that someone has the lock.
-	private boolean multipleFlagsSet() {
+	private boolean isAnotherFlagSet(int me) {
 		int numFlagsSet = 0;
 
 		for (int i = 0; i < flags.length; i++) {
-			if (flags[i])
-				numFlagsSet++;
-			if (numFlagsSet > 1)
+			if (flags[i] && (i != me))
 				return true;
 
 		}
