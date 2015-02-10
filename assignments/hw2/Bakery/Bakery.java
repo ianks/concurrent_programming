@@ -1,37 +1,37 @@
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicLongArray;
 
 class Bakery {
-	AtomicLongArray flag;
-	AtomicLongArray label;
-	AtomicLong max = new AtomicLong(0);
+	private boolean[] flag;
+	private long[] label;
+	private AtomicLong max = new AtomicLong(0);
 
 	public Bakery(int threadCount) {
-		// Initial zero'd out array to create AtomicLongArray with
-		long[] zeros = new long[threadCount];
-
 		// flag signifies interest in critical section
-		flag = new AtomicLongArray(zeros);
+		flag = new boolean[threadCount];
 
 		// label signifies the order in which one recieved the lock
-		label = new AtomicLongArray(zeros);
+		label = new long[threadCount];
 	}
 
 	public void lock(int me) {
-		flag.set(me, 1);
-		label.set(me, max.incrementAndGet());
+		// Set our flag to true, meaning we are expressing interest in critical section
+		flag[me] = true;
+
+		// Here we set the label, with a max that is one larger
+		// than the previous max
+		label[me] = max.incrementAndGet();
 
 		while (flagIsUpAndlabelIsSmallest(me)) {}
 	}
 
 	public void unlock(int me) {
-		flag.set(me, 0);
+		flag[me] = false;
 	}
 
 	// Check to see that the flag is up and that the label is smaller than
 	// current thread's ID
 	private boolean flagIsUpAndlabelIsSmallest(int me) {
-		for (int k = 0; k < flag.length(); k++) {
+		for (int k = 0; k < flag.length; k++) {
 			if (flagIsUp(k) && isMinimumlabel(k, me)) {
 				return true;
 			}
@@ -41,10 +41,10 @@ class Bakery {
 	}
 
 	private boolean flagIsUp(int k) {
-		return flag.get(k) == 1;
+		return flag[k] == true;
 	}
 
 	private boolean isMinimumlabel(int k, int me) {
-		return label.get(k) < label.get(me);
+		return label[k] < label[me];
 	}
 }
