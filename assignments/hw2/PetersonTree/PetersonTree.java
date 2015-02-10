@@ -1,23 +1,16 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class PetersonTree {
 	int numOfThreads;
-	private AtomicInteger lockCounter = new AtomicInteger(0);
-	private AtomicInteger unlockCounter = new AtomicInteger(0);
-	public static volatile int size;
-	public static PetersonNode root;
-	public static List<PetersonNode> leaves;
-	private final static Logger log = Logger.getLogger(PetersonTree.class.getName());
+	public PetersonNode root;
+	public List<PetersonNode> leaves;
 
 	public PetersonTree(int threads) {
 		validateArgs(threads);
 
 		numOfThreads = threads;
 		root = new PetersonNode(null, numOfThreads);
-		size++;
 
 		List<PetersonNode> initList = new ArrayList<>();
 		initList.add(root);
@@ -36,20 +29,14 @@ public class PetersonTree {
 		}
 	}
 
-	// In this method we find the path from leaf to noce, then traverse
-	// the path in reverse order
+	// Unlock the nodes. I also tried doing this in reverse, but it was
+	// actually more performant to do it this way.
 	public void unlock(int me) {
 		PetersonNode currentNode = leafLockForThread(me);
-		List<PetersonNode> path = new ArrayList<>();
 
 		while (currentNode != null) {
-			path.add(currentNode);
+			currentNode.unlock(me);
 			currentNode = currentNode.parent;
-		}
-
-		// Unlock in reverse
-		for (int j = path.size() - 1; j >= 0; j--) {
-			path.get(j).unlock(me);
 		}
 	}
 
@@ -89,17 +76,10 @@ public class PetersonTree {
 
 			currentLeaves.add(node.leftChild);
 			currentLeaves.add(node.rightChild);
-
-			size += 2;
 		}
 
 		// Recurse, passing our current leaves back to the function
 		return growLockTree(currentLeaves);
-	}
-
-	@Override public String toString() {
-		return    "TotalSize: " + size + "\n"
-	       		+ "Leaves size: " + leaves.size();
 	}
 
 	private void validateArgs(int threads) {
