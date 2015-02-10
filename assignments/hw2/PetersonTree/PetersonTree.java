@@ -16,7 +16,7 @@ public class PetersonTree {
 		validateArgs(threads);
 
 		numOfThreads = threads;
-		root = new PetersonNode(null);
+		root = new PetersonNode(null, numOfThreads);
 		size++;
 
 		List<PetersonNode> initList = new ArrayList<>();
@@ -32,16 +32,24 @@ public class PetersonTree {
 
 		while (currentNode != null) {
 			currentNode.lock(me);
-			currentNode = currentNode.getParent();
+			currentNode = currentNode.parent;
 		}
 	}
 
-	public synchronized void unlock(int me) {
+	// In this method we find the path from leaf to noce, then traverse
+	// the path in reverse order
+	public void unlock(int me) {
 		PetersonNode currentNode = leafLockForThread(me);
+		List<PetersonNode> path = new ArrayList<>();
 
 		while (currentNode != null) {
-			currentNode.unlock(me);
-			currentNode = currentNode.getParent();
+			path.add(currentNode);
+			currentNode = currentNode.parent;
+		}
+
+		// Unlock in reverse
+		for (int j = path.size() - 1; j >= 0; j--) {
+			path.get(j).unlock(me);
 		}
 	}
 
@@ -76,8 +84,8 @@ public class PetersonTree {
 		// Loop through each node, add two childent and store them as
 		// the current leaves
 		for (PetersonNode node : new ArrayList<PetersonNode>(nodes)) {
-			node.leftChild = new PetersonNode(node);
-			node.rightChild = new PetersonNode(node);
+			node.leftChild = new PetersonNode(node, numOfThreads);
+			node.rightChild = new PetersonNode(node, numOfThreads);
 
 			currentLeaves.add(node.leftChild);
 			currentLeaves.add(node.rightChild);

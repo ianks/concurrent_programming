@@ -2,8 +2,8 @@ import java.util.concurrent.locks.Lock;
 
 public class TestPetersonTree implements Runnable {
 	public int me;
-	public static final int countToThis = 1000;
-	public static final int noOfExperiments = 1000;
+	public static final int countToThis = 10000;
+	public static final int noOfExperiments = 100;
 	public static volatile int count = 0;
 	public static int threadCount = 8;
 	public static PetersonTree lock = new PetersonTree(threadCount);
