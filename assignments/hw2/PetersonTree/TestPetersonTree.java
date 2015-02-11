@@ -5,7 +5,7 @@ public class TestPetersonTree implements Runnable {
 	public static final int countToThis = 10000;
 	public static final int noOfExperiments = 3;
 	public static volatile int count = 0;
-	public static int threadCount = 64;
+	public static int threadCount = 8;
 	public static PetersonTree lock = new PetersonTree(threadCount);
 
 	public TestPetersonTree(int newMe) {
