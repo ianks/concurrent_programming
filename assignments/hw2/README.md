@@ -8,10 +8,10 @@ _Author: Ian Ker-Seymer_
   - `cd PetersonTree`
   - `cd Bakery`
 
-1. Compile the code
+2. Compile the code
   - `make`
 
-1. Run the test
+3. Run the test
   - `java TestPetersonTree`
   - `java TestBakery`
 
