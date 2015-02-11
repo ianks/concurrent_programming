@@ -14,3 +14,10 @@ _Author: Ian Ker-Seymer_
 1. Run the test
   - `java TestPetersonTree`
   - `java TestBakery`
+
+## Filter lock vs Peterson tree
+
+| Threads       | Peterson Tree | Filter Lock                        |
+| ------------- |:-------------:|:----------------------------------:|
+| 8             | 55 ms         | 155 ms                             |
+| 64            | 9780 ms       | Unknown (Too long for my computer) |
