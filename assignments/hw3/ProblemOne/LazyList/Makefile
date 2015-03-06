@@ -10,6 +10,9 @@ CLASSES = $(wildcard *.java)
 
 default: classes
 
+test: classes
+	java TestLazyList
+
 classes: $(CLASSES:.java=.class)
 
 clean:
