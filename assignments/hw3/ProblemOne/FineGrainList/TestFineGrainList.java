@@ -1,7 +1,7 @@
 public class TestFineGrainList implements Runnable {
 	public final int me;
 	public final String type;
-	public static final int countToThis = 1000;
+	public static final int countToThis = 2000;
 	public static final int threadCount = 16;
 	public static FineGrainList<Integer> list;
 
@@ -21,6 +21,16 @@ public class TestFineGrainList implements Runnable {
 			for (int i = 0; i < countToThis; i++) {
 				if (list.add(i + countToThis*me))
 					list.remove(i + countToThis*me);
+			}
+		}
+
+		if (type == "contains") {
+			for (int i = 0; i < countToThis; i++) {
+				list.add(i + countToThis*me);
+			}
+
+			for (int j = 0; j < countToThis; j++) {
+				list.contains(j + countToThis*me);
 			}
 		}
 	}
@@ -48,20 +58,18 @@ public class TestFineGrainList implements Runnable {
 	}
 
 	private static boolean runTests() {
-		long startTime = System.nanoTime();
-		boolean testsPassed = testAdd() && testRemove();
-		long totalTime = (System.nanoTime() - startTime)/1000000;
-
-		System.out.println("\nFineGrain list add: " + totalTime + "ms");
-
-		return testsPassed;
+		return testAdd() && testRemove() && testContains();
 	}
 
 	private static boolean testAdd() {
 		System.out.println("\nTesting add()...");
 
 		list = new FineGrainList<Integer>();
+		long startTime = System.nanoTime();
 		spawnThreads("add");
+		long totalTime = (System.nanoTime() - startTime)/1000000;
+		System.out.println("\nAdd: " + totalTime + "ms");
+
 		return expect(list.getSize(), countToThis * threadCount);
 	}
 
@@ -70,7 +78,11 @@ public class TestFineGrainList implements Runnable {
 
 		list = new FineGrainList<Integer>();
 
+		long startTime = System.nanoTime();
 		spawnThreads("remove");
+		long totalTime = (System.nanoTime() - startTime)/1000000;
+		System.out.println("\nRemove: " + totalTime + "ms");
+
 		return expect(list.getSize(), 0);
 	}
 
@@ -79,10 +91,20 @@ public class TestFineGrainList implements Runnable {
 
 		list = new FineGrainList<Integer>();
 
+		long startTime = System.nanoTime();
 		spawnThreads("contains");
+		long totalTime = (System.nanoTime() - startTime)/1000000;
+		System.out.println("\nContains: " + totalTime + "ms");
+
+		boolean correct = true;
 		for (int i = 0; i < 1000; i++) {
-			expect(list.contains(i) ? 1 : 0, 1);
+			if (!list.contains(i)) {
+				correct = false;
+				break;
+			}
 		}
+
+		expect(correct ? 1 : 0, 1);
 
 		return true;
 	}
