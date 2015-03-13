@@ -48,6 +48,7 @@
 
 	 public boolean remove(AnyType item) {
 		 int key = item.hashCode();
+		 int indexer = 0;
 
 		 while (true) {
 			 Node pred = head;
@@ -67,7 +68,13 @@
 					 if (validate(pred, curr)) {
 						 if (curr.key == key) {
 							 curr.marked = true;
-					 		 cleanUp();
+
+							 // Only unlink old nodes every 100 times
+					 		 if (indexer % 100 == 0)
+								 cleanUp();
+
+					 		 indexer++;
+
 							 return true;
 						 } else {
 							 return false;
@@ -115,7 +122,7 @@
 		 Node curr = head;
 
 		 while ((curr = curr.next) != null)
-			 size++;
+			 if (!curr.marked) size++;
 
 		 return size;
 	 }

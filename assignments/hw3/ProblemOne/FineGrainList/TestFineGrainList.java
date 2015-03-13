@@ -18,9 +18,14 @@ public class TestFineGrainList implements Runnable {
 		}
 
 		if (type == "remove") {
-			for (int i = 0; i < countToThis; i++) {
-				if (list.add(i + countToThis*me))
-					list.remove(i + countToThis*me);
+			int newCountToThis = countToThis * 2;
+
+			for (int i = 0; i < newCountToThis; i++) {
+				list.add(i + newCountToThis*me);
+			}
+
+			for (int j = 0; j < newCountToThis; j++) {
+				list.remove(j + newCountToThis*me);
 			}
 		}
 
