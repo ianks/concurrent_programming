@@ -62,7 +62,45 @@ Contains | 7615ms     | 22043ms       | 3202ms     | 3251ms   |
 
 Table: Number of threads: 32, Array size: 2000
 
-## Problem 3
+Coarse list often (counter-intuitively) performs better than FineGrainList
+despite having more of its execution time spent in locks. This is more of a
+practical concern and is due to the overhead that is required to obtain
+and release locks. With small arrays and small number of threads, there
+is not enough gained by adding parallelism when you take into account the
+overhead caused by dealing with locks.
+
+LazierList begins to shine when adding to a new list, however, it suffers
+tremendously when attempting to remove values because it must a) traverse
+more values and b) occasionally loops through the list to remove all of the
+marked nodes.
+
+## Testing the list
+
+In order to test the implementations, you could create some fairly
+complicated test cases which see to exploit all of the edge cases you can
+imagine, with as many threads as possible. Then, you can compare that list
+index by index with a list that was created purely sequentially. By creating
+tests cases with contention amongst threads, hopefully you can find a situation
+which 'breaks' the implementation.
+
+However, this is problematical in general. The number of possible permutations
+with respect to list manipulation is nearly infinite. You simply cannot test
+every case; and thus is fails as a method for proving correctness.
+
+A better method is using a formal proof to show that the list is linearizable,
+then use test cases to ensure you don't accidentally write bugs in your
+implementation.
+
+# Problem 2
+
+The implementation relies on the state of multiple registers to determine if
+a register is currently being written to. During the read phase, reads the 3
+separate indices (from 0, N -> N, 2N -> 2N, 3N). It then checks whether whether
+1N and 2N are equal. If they are, that means it is not being overwritten and
+we can return 2N. Otherwise, 0N represents the correct state as because N1 can't
+be written before N1.
+
+# Problem 3
 
 A linearizable object is an object in which a single linearization point can
 be found. In the IQueue example, there is not a single point where "the
