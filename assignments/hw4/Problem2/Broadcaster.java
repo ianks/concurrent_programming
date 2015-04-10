@@ -2,7 +2,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.List;
 import java.util.Arrays;
 
-public class BroadcastingConcurrentQueue<T> {
+public class Broadcaster<T> implements ConcurrentQueue<T> {
 	private final Node head, tail;
 	private final ReentrantLock lock = new ReentrantLock();
 	private volatile int size;
@@ -17,7 +17,7 @@ public class BroadcastingConcurrentQueue<T> {
 		}
 	}
 
-	public BroadcastingConcurrentQueue() {
+	public Broadcaster() {
 		head = new Node(null);
 		tail = new Node(null);
 
@@ -68,8 +68,8 @@ public class BroadcastingConcurrentQueue<T> {
 	}
 
 	public static void main(String[] args) {
-		BroadcastingConcurrentQueue<String> queue;
-		queue = new BroadcastingConcurrentQueue<String>();
+		Broadcaster<String> queue;
+		queue = new Broadcaster<String>();
 
 		List<String> foods = Arrays.asList(
 			"Cheerios",

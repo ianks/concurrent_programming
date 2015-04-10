@@ -11,7 +11,7 @@ CLASSES = $(wildcard *.java)
 default: classes
 
 test: classes
-	java BroadcastingConcurrentQueue
+	java Broadcaster
 	$(MAKE) --no-print-directory clean
 
 classes: $(CLASSES:.java=.class)
