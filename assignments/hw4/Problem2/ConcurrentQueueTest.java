@@ -67,8 +67,14 @@ public class ConcurrentQueueTest implements Runnable {
     }
 
     public static void main(String[] args) {
-        System.out.println("Starting tests for Broadcaster.java...");
+        System.out.println("\nStarting tests for Broadcaster.java...");
         q = new Broadcaster<String>(threadCount);
+        spawnThreads(q);
+
+        System.out.println("\n========================");
+
+        System.out.println("\nStarting tests for Signaler.java...");
+        q = new Signaler<String>(threadCount);
         spawnThreads(q);
     }
 }
