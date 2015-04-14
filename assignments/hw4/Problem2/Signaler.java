@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Arrays;
 
 public class Signaler<T> implements ConcurrentQueue<T> {
-	private final Node head, tail;
+	private volatile Node head, tail;
 	private final ReentrantLock popLock, pushLock;
 	private final Integer capacity;
 	private AtomicInteger size;
@@ -13,8 +13,8 @@ public class Signaler<T> implements ConcurrentQueue<T> {
 
 	private class Node {
 		public T item;
-		public Node next;
-		public Node prev;
+		public volatile Node next;
+		public volatile Node prev;
 
 		public Node(T data) {
 			item = data;
@@ -44,7 +44,9 @@ public class Signaler<T> implements ConcurrentQueue<T> {
 		pushLock.lock();
 
 		try {
-			while (isFull()) notFullCondition.awaitUninterruptibly();
+			while (isFull()) {
+				notFullCondition.awaitUninterruptibly();
+			}
 
 			Node newNode = new Node(item);
 			newNode.next = tail.next;

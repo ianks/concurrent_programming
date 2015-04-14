@@ -4,7 +4,7 @@ import java.util.Arrays;
 public class ConcurrentQueueTest implements Runnable {
     private static ConcurrentQueue<String> q;
     private static List<String> list;
-    private static final int threadCount = 8;
+    private static final int threadCount = 64;
 
     public ConcurrentQueueTest(ConcurrentQueue<String> _q) {
         q = _q;
@@ -13,6 +13,7 @@ public class ConcurrentQueueTest implements Runnable {
     public void run() {
         testPush(q);
         testPop(q);
+        testMixed(q);
     }
 
     public static void testPush(ConcurrentQueue<String> q) {
@@ -26,9 +27,26 @@ public class ConcurrentQueueTest implements Runnable {
 
     public static void testPop(ConcurrentQueue<String> q) {
         if (q.pop() == "test")
-            pass("testPop() passed");
+            pass("testPop() passed.");
         else
             fail("testPop() failed.");
+    }
+
+    public static void testMixed(ConcurrentQueue<String> q) {
+        q.push("test");
+        q.pop();
+        q.push("test");
+        q.pop();
+        q.push("test");
+        q.pop();
+        q.push("test");
+        q.pop();
+        q.push("test");
+        q.pop();
+        q.push("test");
+        q.pop();
+        q.push("test");
+        q.pop();
     }
 
     private static void pass(String msg) {
