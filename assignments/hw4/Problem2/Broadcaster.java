@@ -55,12 +55,16 @@ public class Broadcaster<T> implements ConcurrentQueue<T> {
 	public boolean contains(T item) {
 		Node current = tail.next;
 
-		for (int i = 0; i < size; i++) {
+		for (int i = 0; i <= size; i++) {
 			if (current.item == item) return true;
 			current = current.next;
 		}
 
 		return false;
+	}
+
+	public int getSize() {
+		return size;
 	}
 
 	private boolean isEmpty() {
