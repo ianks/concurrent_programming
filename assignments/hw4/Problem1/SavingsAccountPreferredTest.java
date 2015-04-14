@@ -12,19 +12,18 @@ public class SavingsAccountPreferredTest implements Runnable {
 
 	public void testWithdraw() {
 		try {
-			acct.withdrawPreferred(1);
+			acct.deposit(13);
 			acct.withdrawPreferred(1);
 			acct.withdrawPreferred(1);
 			acct.withdrawPreferred(1);
 			acct.withdraw(10);
 
-			acct.deposit(13);
 
 		} catch (InterruptedException ex) {
 			System.out.println(ex);
 		}
 
-		pass("Withdraw succeeded?");
+		pass("Withdraw succeeded.");
 	}
 
 	public static void spawnThreads() {
