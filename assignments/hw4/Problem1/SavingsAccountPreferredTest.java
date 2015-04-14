@@ -24,14 +24,14 @@ public class SavingsAccountPreferredTest implements Runnable {
 			System.out.println(ex);
 		}
 
-		pass("Withdraw succeeded.");
+		pass("Withdraw succeeded?");
 	}
 
 	public static void spawnThreads() {
 		Thread[] threads = new Thread[threadCount];
 
 		for (int i = 0; i < threadCount; i++) {
-			threads[i] = new Thread(new SavingsAccountTest());
+			threads[i] = new Thread(new SavingsAccountPreferredTest());
 			threads[i].start();
 		}
 

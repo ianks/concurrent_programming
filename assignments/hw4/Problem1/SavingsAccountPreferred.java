@@ -11,6 +11,7 @@ public class SavingsAccountPreferred {
 
 
 	public SavingsAccountPreferred() {
+		preferredWaiting = new AtomicInteger();
 		balance = 0;
 		depositLock = new ReentrantLock();
 		depositPreferredLock = new ReentrantLock();
