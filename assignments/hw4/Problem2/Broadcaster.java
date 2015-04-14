@@ -1,11 +1,13 @@
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.List;
 import java.util.Arrays;
 
 public class Broadcaster<T> implements ConcurrentQueue<T> {
 	private final Node head, tail;
-	private final ReentrantLock lock = new ReentrantLock();
-	private volatile int size;
+	private final ReentrantLock pushLock = new ReentrantLock();
+	private final ReentrantLock popLock = new ReentrantLock();
+	private AtomicInteger size;
 
 	private class Node {
 		public T item;
@@ -24,7 +26,7 @@ public class Broadcaster<T> implements ConcurrentQueue<T> {
 		head.prev = tail;
 		tail.next = head;
 
-		size = 0;
+		size = new AtomicInteger();
 	}
 
 	public T push(T item) {
@@ -36,7 +38,7 @@ public class Broadcaster<T> implements ConcurrentQueue<T> {
 		tail.next.prev = newNode;
 		tail.next = newNode;
 
-		size++;
+		size.incrementAndGet();
 
 		return item;
 	}
@@ -47,7 +49,7 @@ public class Broadcaster<T> implements ConcurrentQueue<T> {
 		T poppedData = head.prev.item;
 		head.prev = head.prev.prev;
 
-		size--;
+		size.decrementAndGet();
 
 		return poppedData;
 	}
@@ -55,7 +57,7 @@ public class Broadcaster<T> implements ConcurrentQueue<T> {
 	public boolean contains(T item) {
 		Node current = tail.next;
 
-		for (int i = 0; i <= size; i++) {
+		for (int i = 0; i <= size.get(); i++) {
 			if (current.item == item) return true;
 			current = current.next;
 		}
@@ -64,11 +66,11 @@ public class Broadcaster<T> implements ConcurrentQueue<T> {
 	}
 
 	public int getSize() {
-		return size;
+		return size.get();
 	}
 
 	private boolean isEmpty() {
-		return size == 0;
+		return size.get() == 0;
 	}
 
 	public static void main(String[] args) {
