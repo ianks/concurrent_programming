@@ -1,42 +1,44 @@
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.Condition;
 
 public class SavingsAccount {
 	public volatile Integer balance;
-	private final ReentrantLock depositLock, withdrawLock;
-	private Condition deposited;
+	private final Lock depositLock;
+	private Condition withdrawCondition;
 
 
 	public SavingsAccount() {
-		depositLock = new ReentrantLock();
-		withdrawLock = new ReentrantLock();
-		deposited = depositLock.newCondition();
 		balance = 0;
+		depositLock = new ReentrantLock();
+		withdrawCondition = depositLock.newCondition();
 	}
 
-	public Integer deposit(Integer k) {
+	public Integer deposit(Integer k) throws InterruptedException {
 		depositLock.lock();
 
 		try {
 			balance += k;
+			withdrawCondition.signalAll();
+
+			return k;
 		} finally {
 			depositLock.unlock();
-			deposited.signalAll();
 		}
-
-		return k;
 	}
 
-	public Integer withdraw(Integer k) {
-		withdrawLock.lock();
+	public Integer withdraw(Integer k) throws InterruptedException {
+		depositLock.lock();
+
 		try {
-			while (balance < k) deposited.awaitUninterruptibly();
+			while (balance < k) withdrawCondition.await();
 			balance -= k;
+
+			return k;
 		} finally {
-			withdrawLock.unlock();
+			depositLock.unlock();
 		}
 
-		return k;
 	}
 
 	public Integer getBalance() {
