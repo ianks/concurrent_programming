@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+require 'benchmark'
+
+system 'make > /dev/null'
+
+Benchmark.bm do |x|
+  x.report('BarrierArray: ')   { 20.times { system 'java BarrierArray > /dev/null' } }
+  x.report('BarrierCounter: ') { 20.times { system 'java BarrierCounter > /dev/null' } }
+end
+
+system 'make clean > /dev/null'
