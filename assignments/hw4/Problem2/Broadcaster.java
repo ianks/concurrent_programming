@@ -102,17 +102,6 @@ public class Broadcaster<T> implements ConcurrentQueue<T> {
 		return poppedData;
 	}
 
-	public boolean contains(T item) {
-		Node current = tail.next;
-
-		for (int i = 0; i <= size.get(); i++) {
-			if (current.item == item) return true;
-			current = current.next;
-		}
-
-		return false;
-	}
-
 	public int getSize() {
 		return size.get();
 	}

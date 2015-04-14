@@ -1,42 +1,34 @@
 import java.util.List;
 import java.util.Arrays;
 
-public class ConcurrentQueueTest {
-    private static Broadcaster<String> broadcaster;
+public class ConcurrentQueueTest implements Runnable {
+    private static ConcurrentQueue<String> q;
     private static List<String> list;
+    private static final int threadCount = 8;
+
+    public ConcurrentQueueTest(ConcurrentQueue<String> _q) {
+        q = _q;
+    }
+
+    public void run() {
+        testPush(q);
+        testPop(q);
+    }
 
     public static void testPush(ConcurrentQueue<String> q) {
-        for (String item : list)
-            q.push("");
+        q.push("test");
 
-        if (q.getSize() == 3)
-            pass("testPop() passed.");
+        if (q.getSize() > 0)
+            pass("testPush() passed.");
         else
-            fail("testPop() failed.");
+            fail("testPush() failed.");
     }
 
     public static void testPop(ConcurrentQueue<String> q) {
-        for (String item : list)
-            q.push(item);
-
-        boolean passed = (q.pop() == "Cheerios") &&
-                         (q.pop() == "Feta cheese") &&
-                         (q.pop() == "Salmon smoothie");
-
-        if (passed)
+        if (q.pop() == "test")
             pass("testPop() passed");
         else
             fail("testPop() failed.");
-    }
-
-    public static void testContains(ConcurrentQueue<String> q) {
-        for (String item : list)
-            q.push(item);
-
-        if (q.contains("Salmon smoothie"))
-            pass("testContains() passed");
-        else
-            fail("testContains() failed.");
     }
 
     private static void pass(String msg) {
@@ -53,11 +45,25 @@ public class ConcurrentQueueTest {
         System.out.println(ANSI_RED + msg + ANSI_RESET);
     }
 
-    public static void main(String[] args) {
-        list = Arrays.asList("Cheerios", "Feta cheese", "Salmon smoothie");
+    public static void spawnThreads(ConcurrentQueue<String> q) {
+        Thread[] threads = new Thread[threadCount];
 
-        testPop(new Broadcaster<String>(32));
-        testPush(new Broadcaster<String>(32));
-        testContains(new Broadcaster<String>(32));
+        for (int i = 0; i < threadCount; i++) {
+            threads[i] = new Thread(new ConcurrentQueueTest(q));
+            threads[i].start();
+        }
+
+        for (Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        q = new Broadcaster<String>(threadCount);
+        spawnThreads(q);
     }
 }
