@@ -12,6 +12,7 @@ default: classes
 
 test: classes
 	java BarrierCounter
+	java BarrierArray
 	$(MAKE) --no-print-directory clean
 
 classes: $(CLASSES:.java=.class)
