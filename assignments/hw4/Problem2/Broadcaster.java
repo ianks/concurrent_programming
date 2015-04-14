@@ -1,13 +1,15 @@
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.Condition;
 import java.util.List;
 import java.util.Arrays;
 
 public class Broadcaster<T> implements ConcurrentQueue<T> {
 	private final Node head, tail;
-	private final ReentrantLock pushLock = new ReentrantLock();
-	private final ReentrantLock popLock = new ReentrantLock();
+	private final ReentrantLock popLock, pushLock;
+	private final Integer capacity;
 	private AtomicInteger size;
+	private Condition notFullCondition, notEmptyCondition;
 
 	private class Node {
 		public T item;
@@ -19,37 +21,83 @@ public class Broadcaster<T> implements ConcurrentQueue<T> {
 		}
 	}
 
-	public Broadcaster() {
+	public Broadcaster(int _capacity) {
+		capacity = _capacity;
+
 		head = new Node(null);
 		tail = new Node(null);
 
 		head.prev = tail;
 		tail.next = head;
 
-		size = new AtomicInteger();
+		pushLock = new ReentrantLock();
+		popLock = new ReentrantLock();
+
+		notFullCondition = pushLock.newCondition();
+		notEmptyCondition = popLock.newCondition();
+
+		size = new AtomicInteger(0);
 	}
 
 	public T push(T item) {
-		Node newNode = new Node(item);
-		newNode.next = tail.next;
+		boolean mustAwakeDequeuers = false;
+		pushLock.lock();
 
-		if (isEmpty()) head.prev = newNode;
+		try {
+			while (isFull()) notFullCondition.awaitUninterruptibly();
 
-		tail.next.prev = newNode;
-		tail.next = newNode;
+			Node newNode = new Node(item);
+			newNode.next = tail.next;
 
-		size.incrementAndGet();
+			if (isEmpty()) head.prev = newNode;
+
+			tail.next.prev = newNode;
+			tail.next = newNode;
+
+			if (size.incrementAndGet() == 0) mustAwakeDequeuers = true;
+		} finally {
+			pushLock.unlock();
+		}
+
+		if (mustAwakeDequeuers) {
+			popLock.lock();
+
+			try {
+				notEmptyCondition.signalAll();
+			} finally {
+				popLock.unlock();
+			}
+		}
 
 		return item;
 	}
 
 	public T pop() {
-		if (isEmpty()) return null;
+		boolean mustAwakeEnqueuers = false;
+		T poppedData;
+		popLock.lock();
 
-		T poppedData = head.prev.item;
-		head.prev = head.prev.prev;
+		try {
+			while(isEmpty()) notEmptyCondition.awaitUninterruptibly();
 
-		size.decrementAndGet();
+			poppedData = head.prev.item;
+			head.prev = head.prev.prev;
+
+			if (size.decrementAndGet() == capacity)
+				mustAwakeEnqueuers = true;
+		} finally {
+			popLock.unlock();
+		}
+
+		if (mustAwakeEnqueuers) {
+			pushLock.lock();
+
+			try {
+				notFullCondition.signalAll();
+			} finally {
+				pushLock.unlock();
+			}
+		}
 
 		return poppedData;
 	}
@@ -73,26 +121,7 @@ public class Broadcaster<T> implements ConcurrentQueue<T> {
 		return size.get() == 0;
 	}
 
-	public static void main(String[] args) {
-		Broadcaster<String> queue;
-		queue = new Broadcaster<String>();
-
-		List<String> foods = Arrays.asList(
-			"Cheerios",
-			"Feta cheese",
-			"Salmon smoothie"
-		);
-
-		for (String food : foods)
-			queue.push(food);
-
-		System.out.println(queue.contains("Cheerios"));
-		System.out.println(queue.pop());
-		System.out.println(queue.contains("Cheerios"));
-
-		System.out.println(queue.pop());
-		System.out.println(queue.pop());
-		System.out.println(queue.pop());
-
+	private boolean isFull() {
+		return size.get() == capacity;
 	}
 }

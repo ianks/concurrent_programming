@@ -56,8 +56,8 @@ public class ConcurrentQueueTest {
     public static void main(String[] args) {
         list = Arrays.asList("Cheerios", "Feta cheese", "Salmon smoothie");
 
-        testPop(new Broadcaster<String>());
-        testPush(new Broadcaster<String>());
-        testContains(new Broadcaster<String>());
+        testPop(new Broadcaster<String>(32));
+        testPush(new Broadcaster<String>(32));
+        testContains(new Broadcaster<String>(32));
     }
 }
