@@ -1,9 +1,9 @@
-public class SavingsAccountTest implements Runnable {
+public class SavingsAccountPreferredTest implements Runnable {
 	public static final int threadCount = 16;
-	public SavingsAccount acct;
+	public SavingsAccountPreferred acct;
 
-	public SavingsAccountTest() {
-		acct = new SavingsAccount();
+	public SavingsAccountPreferredTest() {
+		acct = new SavingsAccountPreferred();
 	}
 
 	public void run() {
@@ -12,8 +12,14 @@ public class SavingsAccountTest implements Runnable {
 
 	public void testWithdraw() {
 		try {
-			acct.deposit(10);
+			acct.withdrawPreferred(1);
+			acct.withdrawPreferred(1);
+			acct.withdrawPreferred(1);
+			acct.withdrawPreferred(1);
 			acct.withdraw(10);
+
+			acct.deposit(13);
+
 		} catch (InterruptedException ex) {
 			System.out.println(ex);
 		}

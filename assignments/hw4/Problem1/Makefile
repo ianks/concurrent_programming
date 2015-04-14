@@ -12,6 +12,7 @@ default: classes
 
 test: classes
 	java SavingsAccountTest
+	java SavingsAccountPreferredTest
 	$(MAKE) --no-print-directory clean
 
 classes: $(CLASSES:.java=.class)
