@@ -4,49 +4,29 @@ import java.util.Arrays;
 public class ConcurrentQueueTest implements Runnable {
     private static ConcurrentQueue<String> q;
     private static List<String> list;
-    private static final int threadCount = 64;
+    private static final int threadCount = 32;
 
     public ConcurrentQueueTest(ConcurrentQueue<String> _q) {
         q = _q;
     }
 
     public void run() {
-        testPush(q);
-        testPop(q);
         testMixed(q);
     }
 
-    public static void testPush(ConcurrentQueue<String> q) {
-        q.push("test");
-
-        if (q.getSize() > 0)
-            pass("testPush() passed.");
-        else
-            fail("testPush() failed.");
-    }
-
-    public static void testPop(ConcurrentQueue<String> q) {
-        if (q.pop() == "test")
-            pass("testPop() passed.");
-        else
-            fail("testPop() failed.");
-    }
-
     public static void testMixed(ConcurrentQueue<String> q) {
-        q.push("test");
-        q.pop();
-        q.push("test");
-        q.pop();
-        q.push("test");
-        q.pop();
-        q.push("test");
-        q.pop();
-        q.push("test");
-        q.pop();
-        q.push("test");
-        q.pop();
-        q.push("test");
-        q.pop();
+        try {
+            q.push("test");
+            String result = q.pop();
+
+            if (result == "test")
+                pass("Tests passed.");
+            else
+                fail("Tests failed.");
+        } catch(InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private static void pass(String msg) {
@@ -86,13 +66,9 @@ public class ConcurrentQueueTest implements Runnable {
 
     public static void main(String[] args) {
         System.out.println("\nStarting tests for Broadcaster.java...");
-        q = new Broadcaster<String>(threadCount);
+        q = new BoundedQueue<String>(64);
         spawnThreads(q);
 
         System.out.println("\n========================");
-
-        System.out.println("\nStarting tests for Signaler.java...");
-        q = new Signaler<String>(threadCount);
-        spawnThreads(q);
     }
 }

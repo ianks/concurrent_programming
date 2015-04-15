@@ -1,5 +1,4 @@
 public interface ConcurrentQueue<T> {
-	int getSize();
-	T push(T item);
-	T pop();
+	T push(T item) throws InterruptedException;
+	T pop() throws InterruptedException;
 }
