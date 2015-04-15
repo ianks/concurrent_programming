@@ -22,7 +22,6 @@ public class ConcurrentQueueTest implements Runnable {
                 q.push("test");
                 q.push("test");
             } else {
-                Thread.sleep(200);
                 String result = q.pop();
 
                 if (result == "test")

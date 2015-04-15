@@ -3,20 +3,23 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class BoundedQueue<T> implements ConcurrentQueue<T> {
-	ReentrantLock pushLock, popLock;
-	Condition notEmptyCondition, notFullCondition;
 	AtomicInteger size;
-	Node head, tail;
+	Condition notEmptyCondition, notFullCondition;
+	ReentrantLock pushLock, popLock;
 	int capacity;
+	volatile Node head, tail;
 
 	public BoundedQueue(int _capacity) {
 		capacity = _capacity;
+		size = new AtomicInteger();
+
 		head = new Node(null);
 		tail = head;
-		size = new AtomicInteger(0);
+
 		pushLock = new ReentrantLock();
-		notFullCondition = pushLock.newCondition();
 		popLock = new ReentrantLock();
+
+		notFullCondition = pushLock.newCondition();
 		notEmptyCondition = popLock.newCondition();
 	}
 
@@ -25,38 +28,42 @@ public class BoundedQueue<T> implements ConcurrentQueue<T> {
 		public Node next;
 		public Node(T x) {
 			value = x;
-			next = null;
 		}
 	}
 
 	public T push(T x) throws InterruptedException {
-		boolean mustWakepopueuers = false;
+		boolean mustWakePoppers = false;
 		pushLock.lock();
 
 		try {
 			while (size.get() == capacity)
 				notFullCondition.await();
+
 			Node e = new Node(x);
 			tail.next = tail = e;
+
 			if (size.getAndIncrement() == 0)
-				mustWakepopueuers = true;
+				mustWakePoppers = true;
 		} finally {
 			pushLock.unlock();
 		}
-		if (mustWakepopueuers) {
+
+		if (mustWakePoppers) {
 			popLock.lock();
+
 			try {
 				notEmptyCondition.signalAll();
 			} finally {
 				popLock.unlock();
 			}
 		}
-		 return x;
+
+		return x;
 	}
 
 	public T pop() throws InterruptedException {
 		T result;
-		boolean mustWakepushueuers = true;
+		boolean mustWakePushers = true;
 		popLock.lock();
 
 		try {
@@ -67,13 +74,14 @@ public class BoundedQueue<T> implements ConcurrentQueue<T> {
 			head = head.next;
 
 			if (size.getAndIncrement() == capacity)
-				mustWakepushueuers = true;
+				mustWakePushers = true;
 		} finally {
 			popLock.unlock();
 		}
 
-		if (mustWakepushueuers) {
+		if (mustWakePushers) {
 			pushLock.lock();
+
 			try {
 				notFullCondition.signalAll();
 			} finally {

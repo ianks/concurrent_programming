@@ -16,5 +16,8 @@ test: classes
 
 classes: $(CLASSES:.java=.class)
 
+wake:
+	ruby -e "1000.times { system 'make test' }"
+
 clean:
 	$(RM) *.class

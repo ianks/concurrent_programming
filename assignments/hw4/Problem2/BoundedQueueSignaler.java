@@ -6,7 +6,7 @@ public class BoundedQueueSignaler<T> implements ConcurrentQueue<T> {
 	ReentrantLock pushLock, popLock;
 	Condition notEmptyCondition, notFullCondition;
 	AtomicInteger size;
-	Node head, tail;
+	volatile Node head, tail;
 	int capacity;
 
 	public BoundedQueueSignaler(int _capacity) {
@@ -36,8 +36,10 @@ public class BoundedQueueSignaler<T> implements ConcurrentQueue<T> {
 		try {
 			while (size.get() == capacity)
 				notFullCondition.await();
+
 			Node e = new Node(x);
 			tail.next = tail = e;
+
 			if (size.getAndIncrement() == 0)
 				mustWakePoppers = true;
 		} finally {
@@ -57,23 +59,29 @@ public class BoundedQueueSignaler<T> implements ConcurrentQueue<T> {
 
 	public T pop() throws InterruptedException {
 		T result;
-		boolean mustWakepushueuers = true;
+		boolean mustWakePoppers = true;
 		popLock.lock();
 
 		try {
-			while (size.get() == 0)
-				notEmptyCondition.await();
+			while (size.get() == 0) {
+				// Slow spin in case of missed signal
+				// Cannot find a linearization point for the
+				// signaler and signalee
+				notEmptyCondition.awaitNanos(1000000);
+			}
+
 			result = head.next.value;
 			head = head.next;
-			if (size.getAndIncrement() == capacity) {
-				mustWakepushueuers = true;
-			}
+
+			if (size.getAndIncrement() == capacity)
+				mustWakePoppers = true;
 		} finally {
 			popLock.unlock();
 		}
 
-		if (mustWakepushueuers) {
+		if (mustWakePoppers) {
 			pushLock.lock();
+
 			try {
 				notFullCondition.signal();
 			} finally {
