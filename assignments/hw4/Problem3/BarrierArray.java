@@ -1,9 +1,8 @@
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 public class BarrierArray implements Runnable{
 	private static int threadCount = 16;
-	private static boolean[] A = new boolean[threadCount];
-	private static ReentrantLock lock = new ReentrantLock();
+	private static AtomicIntegerArray A = new AtomicIntegerArray(threadCount);
 	private int id;
 
 	public BarrierArray(int _id) {
@@ -14,13 +13,13 @@ public class BarrierArray implements Runnable{
 		foo();
 
 		if (id == 0) {
-			A[0] = true;
+			A.set(0, 1);
 
-			while (!A[threadCount - 1]) {}
+			while (A.get(threadCount - 1) != 1) {}
 		} else {
-			while (!A[id - 1]) {}
+			while (A.get(id - 1) != 1) {}
 
-			A[id] = true;
+			A.set(id, 1);
 		}
 
 		bar();
