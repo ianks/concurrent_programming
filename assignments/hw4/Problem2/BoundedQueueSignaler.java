@@ -2,14 +2,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class BoundedQueue<T> implements ConcurrentQueue<T> {
+public class BoundedQueueSignaler<T> implements ConcurrentQueue<T> {
 	ReentrantLock pushLock, popLock;
 	Condition notEmptyCondition, notFullCondition;
 	AtomicInteger size;
 	Node head, tail;
 	int capacity;
 
-	public BoundedQueue(int _capacity) {
+	public BoundedQueueSignaler(int _capacity) {
 		capacity = _capacity;
 		head = new Node(null);
 		tail = head;
@@ -30,7 +30,7 @@ public class BoundedQueue<T> implements ConcurrentQueue<T> {
 	}
 
 	public T push(T x) throws InterruptedException {
-		boolean mustWakepopueuers = false;
+		boolean mustWakePoppers = false;
 		pushLock.lock();
 
 		try {
@@ -39,14 +39,15 @@ public class BoundedQueue<T> implements ConcurrentQueue<T> {
 			Node e = new Node(x);
 			tail.next = tail = e;
 			if (size.getAndIncrement() == 0)
-				mustWakepopueuers = true;
+				mustWakePoppers = true;
 		} finally {
 			pushLock.unlock();
 		}
-		if (mustWakepopueuers) {
+
+		if (mustWakePoppers) {
 			popLock.lock();
 			try {
-				notEmptyCondition.signalAll();
+				notEmptyCondition.signal();
 			} finally {
 				popLock.unlock();
 			}
@@ -62,12 +63,11 @@ public class BoundedQueue<T> implements ConcurrentQueue<T> {
 		try {
 			while (size.get() == 0)
 				notEmptyCondition.await();
-
 			result = head.next.value;
 			head = head.next;
-
-			if (size.getAndIncrement() == capacity)
+			if (size.getAndIncrement() == capacity) {
 				mustWakepushueuers = true;
+			}
 		} finally {
 			popLock.unlock();
 		}
@@ -75,7 +75,7 @@ public class BoundedQueue<T> implements ConcurrentQueue<T> {
 		if (mustWakepushueuers) {
 			pushLock.lock();
 			try {
-				notFullCondition.signalAll();
+				notFullCondition.signal();
 			} finally {
 				pushLock.unlock();
 			}

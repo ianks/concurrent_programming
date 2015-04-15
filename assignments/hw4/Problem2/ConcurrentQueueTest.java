@@ -4,29 +4,35 @@ import java.util.Arrays;
 public class ConcurrentQueueTest implements Runnable {
     private static ConcurrentQueue<String> q;
     private static List<String> list;
-    private static final int threadCount = 32;
+    private static final int threadCount = 4;
+    private final int id;
 
-    public ConcurrentQueueTest(ConcurrentQueue<String> _q) {
+    public ConcurrentQueueTest(ConcurrentQueue<String> _q, int _id) {
         q = _q;
+        id = _id;
     }
 
     public void run() {
         testMixed(q);
     }
 
-    public static void testMixed(ConcurrentQueue<String> q) {
+    public void testMixed(ConcurrentQueue<String> q) {
         try {
-            q.push("test");
-            String result = q.pop();
+            if (id == 1 || id == 2) {
+                q.push("test");
+                q.push("test");
+            } else {
+                Thread.sleep(200);
+                String result = q.pop();
 
-            if (result == "test")
-                pass("Tests passed.");
-            else
-                fail("Tests failed.");
+                if (result == "test")
+                    pass("Tests passed.");
+                else
+                    fail("Tests failed.");
+            }
         } catch(InterruptedException e) {
             e.printStackTrace();
         }
-
     }
 
     private static void pass(String msg) {
@@ -51,7 +57,7 @@ public class ConcurrentQueueTest implements Runnable {
         Thread[] threads = new Thread[threadCount];
 
         for (int i = 0; i < threadCount; i++) {
-            threads[i] = new Thread(new ConcurrentQueueTest(q));
+            threads[i] = new Thread(new ConcurrentQueueTest(q, i));
             threads[i].start();
         }
 
@@ -65,10 +71,14 @@ public class ConcurrentQueueTest implements Runnable {
     }
 
     public static void main(String[] args) {
-        System.out.println("\nStarting tests for Broadcaster.java...");
+        System.out.println("\nStarting tests for BoundedQueue.java...");
         q = new BoundedQueue<String>(64);
         spawnThreads(q);
 
         System.out.println("\n========================");
+
+        System.out.println("\nStarting tests for BoundedQueueSignaler.java...");
+        q = new BoundedQueueSignaler<String>(64);
+        spawnThreads(q);
     }
 }
