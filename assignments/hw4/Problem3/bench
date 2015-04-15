@@ -4,9 +4,11 @@ require 'benchmark'
 
 system 'make > /dev/null'
 
-Benchmark.bm do |x|
-  x.report('BarrierArray: ')   { 20.times { system 'java BarrierArray > /dev/null' } }
-  x.report('BarrierCounter: ') { 20.times { system 'java BarrierCounter > /dev/null' } }
+20.times do
+  Benchmark.benchmark do |x|
+    x.report('BarrierArray:   ') { system 'java BarrierArray > /dev/null' }
+    x.report('BarrierCounter: ') { system 'java BarrierCounter > /dev/null' }
+  end
 end
 
 system 'make clean > /dev/null'
